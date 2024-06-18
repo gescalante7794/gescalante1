@@ -274,5 +274,12 @@
   </Target>
   <Target Name="AfterBuild">
   </Target>
+<Target Name="pipelinePreDeployCopyAllFilesToOneFolder">
+  <ItemGroup>
+    <_FilesToCopy Include="@(Content);@(BuiltOutput);@(ReferenceCopyLocalPaths)" />
+  </ItemGroup>
+  <Copy SourceFiles="@(_FilesToCopy)" DestinationFolder="$(_PackageTempDir)" />
+</Target>
+
   -->
 </Project>
