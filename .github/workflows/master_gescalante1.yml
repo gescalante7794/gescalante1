@@ -68,4 +68,4 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'gescalante1'
-          package: ASP-app
+          package: .
