@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: windows-latest
 
     steps:
@@ -23,33 +23,25 @@ jobs:
       - name: Restore NuGet packages
         run: nuget restore AspNetWebFormsApp.sln
 
-      - name: Create publish directory
-        run: New-Item -ItemType Directory -Force -Path published
-
       - name: Publish to folder
-        run: msbuild AspNetWebFormsApp.sln /nologo /verbosity:m /p:Configuration=Release /p:TargetFrameworkVersion=v4.8 /p:OutDir=published
+        run: msbuild AspNetWebFormsApp.sln /p:Configuration=Release /p:TargetFrameworkVersion=v4.8 /p:DeployOnBuild=true /p:PublishProfile=FolderProfile /p:PublishDir=$(System.DefaultWorkingDirectory)/published/
 
       - name: List published files
-        run: dir published
+        run: dir $(System.DefaultWorkingDirectory)/published
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: ASP-app
-          path: published/**
+          path: $(System.DefaultWorkingDirectory)/published/**
 
-  deploy:
-    runs-on: windows-latest
-    needs: build
-
-    steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: ASP-app
 
       - name: List downloaded files
-        run: dir ASP-app
+        run: dir $(System.DefaultWorkingDirectory)/ASP-app
 
       - name: Install Azure CLI
         run: |
@@ -68,4 +60,4 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'gescalante1'
-          package: .
+          package: $(System.DefaultWorkingDirectory)/ASP-app
