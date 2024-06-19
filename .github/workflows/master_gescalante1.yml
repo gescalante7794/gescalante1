@@ -46,7 +46,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ASP-app
-          path: ASP-app/
 
       - name: List downloaded files
         run: dir ASP-app
