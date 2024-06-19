@@ -11,7 +11,8 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup MSBuild path
         uses: microsoft/setup-msbuild@v1.1.3
@@ -20,13 +21,13 @@ jobs:
         uses: NuGet/setup-nuget@v1.1.1
 
       - name: Restore NuGet packages
-        run: nuget restore
+        run: nuget restore AspNetWebFormsApp.sln
 
       - name: Create publish directory
         run: New-Item -ItemType Directory -Force -Path published
 
       - name: Publish to folder
-        run: msbuild /nologo /verbosity:m /t:Build /t:CopyFilesToPublishDirectory /p:Configuration=Release /p:TargetFrameworkVersion=v4.8 /p:PublishDir=published
+        run: msbuild AspNetWebFormsApp.sln /nologo /verbosity:m /p:Configuration=Release /p:TargetFrameworkVersion=v4.8 /p:OutDir=published
 
       - name: List published files
         run: dir published
@@ -52,8 +53,8 @@ jobs:
 
       - name: Install Azure CLI
         run: |
-          Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
-          Start-Process msiexec.exe -ArgumentList '/I .\AzureCLI.msi /quiet' -Wait
+          Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile AzureCLI.msi
+          Start-Process msiexec.exe -ArgumentList '/I AzureCLI.msi /quiet' -Wait
 
       - name: Verify Azure CLI Installation
         run: az --version
@@ -64,7 +65,6 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'gescalante1'
