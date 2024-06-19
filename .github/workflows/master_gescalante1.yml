@@ -7,24 +7,23 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup MSBuild path
-        uses: microsoft/setup-msbuild@v1.1.3
+        uses: microsoft/setup-msbuild@v1.1.4  # Actualización a la versión compatible con Node.js 20
 
       - name: Setup NuGet
-        uses: NuGet/setup-nuget@v1.1.1
+        uses: NuGet/setup-nuget@v1.1.2  # Actualización a la versión compatible con Node.js 20
 
       - name: Restore NuGet packages
-        run: nuget restore AspNetWebFormsApp.sln
+        run: nuget restore
 
       - name: Publish to folder
-        run: msbuild AspNetWebFormsApp.sln /p:Configuration=Release /p:TargetFrameworkVersion=v4.8 /p:DeployOnBuild=true /p:PublishProfile=FolderProfile /p:PublishDir=$(System.DefaultWorkingDirectory)/published/
+        run: msbuild /nologo /verbosity:m /t:Build /p:DeployOnBuild=true /p:WebPublishMethod=FileSystem /p:DeleteExistingFiles=True /p:publishUrl=$(System.DefaultWorkingDirectory)/published /p:Configuration=Release /p:TargetFrameworkVersion=v4.8
 
       - name: List published files
         run: dir $(System.DefaultWorkingDirectory)/published
@@ -35,18 +34,23 @@ jobs:
           name: ASP-app
           path: $(System.DefaultWorkingDirectory)/published/**
 
+  deploy:
+    runs-on: windows-latest
+    needs: build
+
+    steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: ASP-app
 
       - name: List downloaded files
-        run: dir $(System.DefaultWorkingDirectory)/ASP-app
+        run: dir ASP-app
 
       - name: Install Azure CLI
         run: |
-          Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile AzureCLI.msi
-          Start-Process msiexec.exe -ArgumentList '/I AzureCLI.msi /quiet' -Wait
+          Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
+          Start-Process msiexec.exe -ArgumentList '/I .\AzureCLI.msi /quiet' -Wait
 
       - name: Verify Azure CLI Installation
         run: az --version
@@ -60,4 +64,4 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'gescalante1'
-          package: $(System.DefaultWorkingDirectory)/ASP-app
+          package: ASP-app
