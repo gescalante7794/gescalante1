@@ -25,6 +25,9 @@ jobs:
       - name: Publish to folder
         run: msbuild /nologo /verbosity:m /t:Build /t:Publish /p:Configuration=Release /p:TargetFrameworkVersion=v4.8 /p:PublishDir=./published
 
+      - name: List published files
+        run: dir published
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
@@ -41,22 +44,12 @@ jobs:
         with:
           name: ASP-app
 
+      - name: List downloaded files
+        run: dir ASP-app
+
       - name: Install Azure CLI
         run: |
           Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
           Start-Process msiexec.exe -ArgumentList '/I .\AzureCLI.msi /quiet' -Wait
 
-      - name: Verify Azure CLI Installation
-        run: az --version
-
-      - name: Login to Azure using Service Principal
-        uses: azure/login@v1.5.0
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'gescalante1'
-          package: .
+      - name: Verify Azu
